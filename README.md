@@ -2,6 +2,8 @@
 
 A static demo of *Mythos*, a student journal born in the philosophy classrooms of Miami Dade College. Built with [Astro](https://astro.build). No backend, no database.
 
+**Live site:** https://migueljm17.github.io/mythos/ (every push to `main` redeploys it automatically via GitHub Actions).
+
 ## Run it locally
 
 You need [Node.js](https://nodejs.org) 20 or newer.
