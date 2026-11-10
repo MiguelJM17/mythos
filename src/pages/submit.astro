@@ -20,7 +20,7 @@ const trackHref = href('track', path);
         <p class="rules__note">These guidelines are a first proposal. The editors will finalize them before the first call for work.</p>
         <ol class="rules__list">
           <li><strong>Who can submit.</strong> Current Miami Dade College students.</li>
-          <li><strong>Two sections.</strong> <em>Philosophy</em>: philosophic papers (1,000–2,000 words). <em>Literature</em>: short essays (300–1,000) and poems (up to five per submission).</li>
+          <li><strong>Two sections.</strong> <em>Philosophy</em>: philosophic papers (1,000–2,000 words). <em>Literature</em>: literary work. Categories and length are still being decided.</li>
           <li><strong>Blind review.</strong> Leave your name out of the file. We read every piece without knowing who wrote it.</li>
           <li><strong>Class papers are welcome.</strong> Revise them first: cut the parts written for the rubric and keep the argument.</li>
           <li><strong>Original and yours.</strong> Unpublished work only. Cite your sources.</li>
@@ -56,8 +56,7 @@ const trackHref = href('track', path);
             <legend>What are you sending?</legend>
             <div class="choices" role="radiogroup" aria-describedby="f-type-err">
               <label class="choice"><input type="radio" name="type" value="Philosophic paper" required /> <span>Philosophic paper<small>Philosophy</small></span></label>
-              <label class="choice"><input type="radio" name="type" value="Short essay" /> <span>Short essay<small>Literature</small></span></label>
-              <label class="choice"><input type="radio" name="type" value="Poem" /> <span>Poem<small>Literature</small></span></label>
+              <label class="choice"><input type="radio" name="type" value="Literary work" /> <span>Literary work<small>Literature</small></span></label>
             </div>
             <p class="err" id="f-type-err"></p>
           </fieldset>
@@ -293,7 +292,7 @@ const trackHref = href('track', path);
   .err:empty { display: none; }
 
   .choices { display: grid; gap: .5rem; margin-top: .35rem; }
-  @media (min-width: 36rem) { .choices { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 36rem) { .choices { grid-template-columns: repeat(2, 1fr); } }
   .choice {
     display: flex; align-items: center; gap: .6rem; cursor: pointer;
     border: 1px solid var(--rule); border-radius: var(--radius); padding: .75rem .85rem; min-height: 48px;

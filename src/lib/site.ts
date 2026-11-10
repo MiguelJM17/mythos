@@ -14,7 +14,7 @@ export function href(path: string, currentPath: string): string {
 
 export const SECTIONS = [
   { id: 'philosophy', label: 'Philosophy', blurb: 'Philosophic papers: a thesis, the strongest objection, and a reply.' },
-  { id: 'literature', label: 'Literature', blurb: 'Short essays, poems and other literary work.' },
+  { id: 'literature', label: 'Literature', blurb: 'Literary work. Categories are still being decided.' },
 ] as const;
 export type SectionId = (typeof SECTIONS)[number]['id'];
 
