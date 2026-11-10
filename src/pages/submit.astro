@@ -1,0 +1,350 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+const path = Astro.url.pathname;
+const trackHref = href('track', path);
+---
+<Base title="Submit" description="Send a philosophic paper, short essay or poem to Mythos.">
+  <div class="wrap submit">
+    <header class="submit__head">
+      <p class="label">Submit</p>
+      <h1 class="submit__title">Send us the paper you’re still thinking about.</h1>
+    </header>
+
+    <div class="submit__grid">
+      <section class="rules" aria-labelledby="rules-title">
+        <div class="rules__head">
+          <h2 id="rules-title" class="label">Guidelines</h2>
+          <span class="draft-pill">Proposed · draft</span>
+        </div>
+        <p class="rules__note">These guidelines are a first proposal. The editors will finalize them before the first call for work.</p>
+        <ol class="rules__list">
+          <li><strong>Who can submit.</strong> Current Miami Dade College students.</li>
+          <li><strong>Two sections.</strong> <em>Philosophy</em>: philosophic papers (1,000–2,000 words). <em>Literature</em>: short essays (300–1,000) and poems (up to five per submission).</li>
+          <li><strong>Blind review.</strong> Leave your name out of the file. We read every piece without knowing who wrote it.</li>
+          <li><strong>Class papers are welcome.</strong> Revise them first: cut the parts written for the rubric and keep the argument.</li>
+          <li><strong>Original and yours.</strong> Unpublished work only. Cite your sources.</li>
+          <li><strong>Format.</strong> PDF or Word document, up to 5 MB.</li>
+        </ol>
+        <p class="rules__track label">Already submitted? <a href={trackHref}>Track your submission</a>.</p>
+      </section>
+
+      <section class="form-wrap" aria-labelledby="form-title">
+        <h2 id="form-title" class="visually-hidden">Submission form</h2>
+
+        <div class="form-error" id="form-error" role="alert" tabindex="-1" hidden>
+          <p class="form-error__title">Please fix the highlighted fields.</p>
+          <ul id="form-error-list"></ul>
+        </div>
+
+        <form id="submit-form" novalidate>
+          <div class="field">
+            <label for="f-name">Full name</label>
+            <p class="hint" id="f-name-hint">Only the editors’ assistant sees this. Reviewers don’t.</p>
+            <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="f-name-hint f-name-err" />
+            <p class="err" id="f-name-err"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-email">Student email</label>
+            <p class="hint" id="f-email-hint">Use your MDC email so we can confirm you’re a student.</p>
+            <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="f-email-hint f-email-err" />
+            <p class="err" id="f-email-err"></p>
+          </div>
+
+          <fieldset class="field">
+            <legend>What are you sending?</legend>
+            <div class="choices" role="radiogroup" aria-describedby="f-type-err">
+              <label class="choice"><input type="radio" name="type" value="Philosophic paper" required /> <span>Philosophic paper<small>Philosophy</small></span></label>
+              <label class="choice"><input type="radio" name="type" value="Short essay" /> <span>Short essay<small>Literature</small></span></label>
+              <label class="choice"><input type="radio" name="type" value="Poem" /> <span>Poem<small>Literature</small></span></label>
+            </div>
+            <p class="err" id="f-type-err"></p>
+          </fieldset>
+
+          <div class="field">
+            <label for="f-title">Title</label>
+            <input id="f-title" name="title" type="text" required maxlength="140" aria-describedby="f-title-err" />
+            <p class="err" id="f-title-err"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-note">A note to the editors <span class="optional">(optional)</span></label>
+            <p class="hint" id="f-note-hint">One or two sentences. What is the piece arguing or exploring?</p>
+            <textarea id="f-note" name="note" rows="3" maxlength="400" aria-describedby="f-note-hint f-note-count"></textarea>
+            <p class="hint count" id="f-note-count" aria-live="polite">0 / 400</p>
+          </div>
+
+          <div class="field">
+            <label for="f-file">Your file</label>
+            <p class="hint" id="f-file-hint">PDF or Word, up to 5 MB. Remove your name from the document.</p>
+            <input id="f-file" name="file" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required aria-describedby="f-file-hint f-file-err" />
+            <p class="err" id="f-file-err"></p>
+          </div>
+
+          <div class="field">
+            <label class="check">
+              <input id="f-own" name="own" type="checkbox" required aria-describedby="f-own-err" />
+              <span>This is my original, unpublished work.</span>
+            </label>
+            <p class="err" id="f-own-err"></p>
+          </div>
+
+          <button class="btn submit__btn" type="submit" id="submit-btn">Review and send</button>
+          <p class="label demo-note">Demo: nothing leaves your browser. Files are not uploaded.</p>
+        </form>
+
+        <div class="success" id="success" tabindex="-1" hidden>
+          <p class="label label--accent">Received</p>
+          <h2 class="success__title">Thank you. Your work is in.</h2>
+          <p>Save this code. You’ll need it to check on your submission.</p>
+          <div class="code-row">
+            <output class="code" id="success-code">MYT-0000</output>
+            <button class="btn btn--ghost" type="button" id="copy-code">Copy code</button>
+          </div>
+          <p class="label" id="copy-status" aria-live="polite"></p>
+          <p class="warn" id="storage-warn" hidden>
+            Your browser blocked local storage, so this demo can’t remember the submission. In the real journal, the code would still work.
+          </p>
+          <div class="success__actions">
+            <a class="btn" id="track-link" href={trackHref}>Track this submission</a>
+            <button class="btn btn--ghost" type="button" id="again">Send another piece</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <dialog class="confirm" id="confirm" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <p class="label">One last look</p>
+      <h2 id="confirm-title" class="confirm__title">Send this to Mythos?</h2>
+      <dl class="confirm__summary">
+        <div><dt>Title</dt><dd id="c-title"></dd></div>
+        <div><dt>Type</dt><dd id="c-type"></dd></div>
+        <div><dt>File</dt><dd id="c-file"></dd></div>
+      </dl>
+      <p class="hint">After sending, you can’t edit the submission. You can withdraw it later by writing to the editors.</p>
+      <div class="confirm__actions">
+        <button class="btn btn--ghost" value="cancel" type="submit">Go back</button>
+        <button class="btn" value="confirm" type="submit" id="confirm-btn">Send it</button>
+      </div>
+    </form>
+  </dialog>
+</Base>
+
+<script>
+  import { save, newCode } from '../lib/submissions';
+
+  const form = document.getElementById('submit-form') as HTMLFormElement;
+  const errorBox = document.getElementById('form-error') as HTMLDivElement;
+  const errorList = document.getElementById('form-error-list') as HTMLUListElement;
+  const dialog = document.getElementById('confirm') as HTMLDialogElement;
+  const success = document.getElementById('success') as HTMLDivElement;
+  const btn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const note = document.getElementById('f-note') as HTMLTextAreaElement;
+  const noteCount = document.getElementById('f-note-count')!;
+  const MAX = 5 * 1024 * 1024;
+
+  note.addEventListener('input', () => { noteCount.textContent = `${note.value.length} / 400`; });
+
+  type Check = { id: string; field: HTMLElement; msg: string | null };
+
+  function validate(): Check[] {
+    const fd = new FormData(form);
+    const email = String(fd.get('email') || '').trim();
+    const file = (form.elements.namedItem('file') as HTMLInputElement).files?.[0];
+    const ext = file?.name.split('.').pop()?.toLowerCase();
+    return [
+      { id: 'f-name', field: form.elements.namedItem('name') as HTMLElement,
+        msg: String(fd.get('name') || '').trim().length < 2 ? 'Enter your full name.' : null },
+      { id: 'f-email', field: form.elements.namedItem('email') as HTMLElement,
+        msg: !email ? 'Enter your student email.' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'That email doesn’t look right. Check for typos.' : null },
+      { id: 'f-type', field: form.querySelector('input[name="type"]') as HTMLElement,
+        msg: fd.get('type') ? null : 'Choose what kind of piece you’re sending.' },
+      { id: 'f-title', field: form.elements.namedItem('title') as HTMLElement,
+        msg: String(fd.get('title') || '').trim() ? null : 'Give your piece a title. A working title is fine.' },
+      { id: 'f-file', field: form.elements.namedItem('file') as HTMLElement,
+        msg: !file ? 'Attach your file.' : !['pdf', 'doc', 'docx'].includes(ext || '') ? 'Use a PDF or Word file.' : file.size > MAX ? 'That file is over 5 MB.' : null },
+      { id: 'f-own', field: form.elements.namedItem('own') as HTMLElement,
+        msg: (form.elements.namedItem('own') as HTMLInputElement).checked ? null : 'Confirm the work is yours and unpublished.' },
+    ];
+  }
+
+  function showErrors(checks: Check[]) {
+    const bad = checks.filter((c) => c.msg);
+    for (const c of checks) {
+      const err = document.getElementById(`${c.id}-err`)!;
+      err.textContent = c.msg ?? '';
+      const inputs = c.id === 'f-type' ? form.querySelectorAll('input[name="type"]') : [c.field];
+      inputs.forEach((el) => (el as HTMLElement).setAttribute('aria-invalid', String(!!c.msg)));
+    }
+    errorList.replaceChildren(...bad.map((c) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '#'; a.textContent = c.msg!;
+      a.addEventListener('click', (e) => { e.preventDefault(); c.field.focus(); });
+      li.append(a); return li;
+    }));
+    errorBox.hidden = bad.length === 0;
+    if (bad.length) errorBox.focus();
+    return bad.length === 0;
+  }
+
+  // Re-check a field once the user fixes it.
+  form.addEventListener('change', () => { if (!errorBox.hidden) showErrors(validate()); });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!showErrors(validate())) return;
+    const fd = new FormData(form);
+    (document.getElementById('c-title')!).textContent = String(fd.get('title'));
+    (document.getElementById('c-type')!).textContent = String(fd.get('type'));
+    (document.getElementById('c-file')!).textContent = (fd.get('file') as File).name;
+    dialog.showModal();
+  });
+
+  dialog.addEventListener('close', () => {
+    if (dialog.returnValue !== 'confirm') { btn.focus(); return; }
+    const fd = new FormData(form);
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    // Simulated network delay so the sending state is visible.
+    setTimeout(() => {
+      const code = newCode();
+      const ok = save({
+        code, title: String(fd.get('title')).trim(), type: String(fd.get('type')),
+        name: String(fd.get('name')).trim(), date: new Date().toISOString().slice(0, 10), stage: 0,
+      });
+      (document.getElementById('success-code')!).textContent = code;
+      (document.getElementById('storage-warn')!).hidden = ok;
+      const link = document.getElementById('track-link') as HTMLAnchorElement;
+      link.href = link.href.split('#')[0] + '#' + code;
+      form.hidden = true;
+      success.hidden = false;
+      success.focus();
+      btn.disabled = false;
+      btn.textContent = 'Review and send';
+    }, 900);
+  });
+
+  document.getElementById('copy-code')!.addEventListener('click', async () => {
+    const status = document.getElementById('copy-status')!;
+    try {
+      await navigator.clipboard.writeText(document.getElementById('success-code')!.textContent || '');
+      status.textContent = 'Copied.';
+    } catch {
+      status.textContent = 'Copy isn’t available here. Write the code down.';
+    }
+  });
+
+  document.getElementById('again')!.addEventListener('click', () => {
+    form.reset();
+    noteCount.textContent = '0 / 400';
+    form.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+    success.hidden = true;
+    form.hidden = false;
+    (form.elements.namedItem('name') as HTMLInputElement).focus();
+  });
+</script>
+
+<style>
+  .submit__head { padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2rem, 5vw, 3.5rem); }
+  .submit__title { font-size: clamp(2.4rem, 1.6rem + 3.8vw, 4.5rem); font-weight: 400; letter-spacing: -0.025em; margin-top: .75rem; max-width: 17ch; }
+  .submit__grid { display: grid; gap: 3.5rem; }
+  @media (min-width: 60rem) { .submit__grid { grid-template-columns: 22rem minmax(0, 36rem); justify-content: space-between; } }
+
+  .rules { border-top: 2px solid var(--ink); padding-top: 1.25rem; align-self: start; }
+  .rules__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .rules__head h2 { margin: 0; }
+  .draft-pill {
+    font-family: var(--sans); font-size: .72rem; font-weight: 600; letter-spacing: .02em;
+    padding: .2rem .55rem; border-radius: 99px; border: 1px solid var(--orange); color: var(--ink);
+  }
+  .rules__note { font-size: .95rem; color: var(--ink-2); margin: .9rem 0 1.25rem; font-style: italic; }
+  .rules__list { margin: 0; padding-left: 1.2rem; font-size: 1rem; line-height: 1.5; }
+  .rules__list li { margin-bottom: .8rem; padding-left: .2rem; }
+  .rules__list li::marker { font-family: var(--serif); font-style: italic; color: var(--orange); }
+  .rules__list strong { font-weight: 600; }
+  .rules__track { margin-top: 1.5rem; }
+
+  /* Form */
+  form { display: grid; gap: 1.6rem; }
+  .field { display: grid; gap: .35rem; border: 0; padding: 0; margin: 0; min-width: 0; }
+  .field label, .field legend { font-family: var(--sans); font-weight: 600; font-size: .95rem; padding: 0; }
+  .optional { font-weight: 400; color: var(--ink-2); }
+  .hint { font-family: var(--sans); font-size: .82rem; color: var(--ink-2); margin: 0; line-height: 1.4; }
+  .count { text-align: right; }
+  input[type='text'], input[type='email'], textarea, input[type='file'] {
+    font: inherit; font-family: var(--sans); font-size: 1rem; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--ink-2); border-radius: var(--radius);
+    padding: .75rem .85rem; width: 100%; min-height: 48px;
+  }
+  textarea { resize: vertical; line-height: 1.5; }
+  input[type='file'] { padding: .55rem; border-style: dashed; cursor: pointer; }
+  input[type='file']::file-selector-button {
+    font: inherit; font-weight: 600; font-size: .9rem; margin-right: .8rem;
+    padding: .45rem .8rem; border: 1px solid var(--blue); border-radius: var(--radius);
+    background: var(--blue-soft); color: var(--blue); cursor: pointer;
+  }
+  input:focus-visible, textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+  [aria-invalid='true'] { border-color: var(--danger) !important; }
+  .err { margin: 0; font-family: var(--sans); font-size: .85rem; font-weight: 500; color: var(--danger); min-height: 0; }
+  .err:empty { display: none; }
+
+  .choices { display: grid; gap: .5rem; margin-top: .35rem; }
+  @media (min-width: 36rem) { .choices { grid-template-columns: repeat(3, 1fr); } }
+  .choice {
+    display: flex; align-items: center; gap: .6rem; cursor: pointer;
+    border: 1px solid var(--rule); border-radius: var(--radius); padding: .75rem .85rem; min-height: 48px;
+    font-weight: 500 !important;
+  }
+  .choice:has(input:checked) { border-color: var(--blue); background: var(--blue-soft); }
+  .choice:has(input:focus-visible) { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .choice span { display: grid; line-height: 1.25; }
+  .choice small { font-weight: 400; font-size: .78rem; color: var(--ink-2); }
+  .choice input, .check input { accent-color: var(--blue); width: 1.1rem; height: 1.1rem; margin: 0; }
+  .check { display: flex; align-items: flex-start; gap: .65rem; font-weight: 500 !important; cursor: pointer; }
+  .check input { margin-top: .2rem; flex: none; }
+
+  .submit__btn { justify-self: start; min-width: 12rem; }
+  .demo-note { margin: -.6rem 0 0; }
+
+  .form-error {
+    border: 1px solid var(--danger); border-left-width: 4px; padding: 1rem 1.25rem; margin-bottom: 1.75rem;
+    font-family: var(--sans); font-size: .92rem;
+  }
+  .form-error:focus { outline: 2px solid var(--danger); outline-offset: 2px; }
+  .form-error__title { font-weight: 600; margin: 0 0 .4rem; }
+  .form-error ul { margin: 0; padding-left: 1.1rem; }
+  .form-error :global(a) { color: var(--danger); }
+
+  /* Success */
+  .success { border-top: 2px solid var(--blue); padding-top: 1.5rem; display: grid; gap: .5rem; }
+  .success:focus { outline: none; }
+  .success p { margin: 0; }
+  .success__title { font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.6rem); font-weight: 400; margin-bottom: .5rem; }
+  .code-row { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin: .75rem 0 .25rem; }
+  .code {
+    font-family: var(--sans); font-weight: 600; font-size: 1.6rem; letter-spacing: .08em;
+    padding: .5rem 1rem; background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--radius);
+    font-variant-numeric: tabular-nums;
+  }
+  .warn { font-family: var(--sans); font-size: .88rem; color: var(--danger); }
+  .success__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.25rem; }
+
+  /* Dialog */
+  .confirm {
+    border: 1px solid var(--rule); border-radius: 4px; padding: 0; width: min(30rem, calc(100vw - 2rem));
+    background: var(--paper); color: var(--ink); box-shadow: 0 20px 60px rgb(0 0 0 / .18);
+  }
+  .confirm::backdrop { background: rgb(20 22 26 / .45); }
+  .confirm form { padding: 1.75rem; gap: 1rem; }
+  .confirm p { margin: 0; }
+  .confirm__title { font-size: 1.8rem; font-weight: 400; }
+  .confirm__summary { margin: 0; display: grid; gap: .6rem; border-block: 1px solid var(--rule); padding-block: .9rem; }
+  .confirm__summary div { display: grid; grid-template-columns: 4.5rem 1fr; gap: .75rem; }
+  .confirm__summary dt { font-family: var(--sans); font-size: .82rem; color: var(--ink-2); padding-top: .2rem; }
+  .confirm__summary dd { margin: 0; overflow-wrap: anywhere; }
+  .confirm__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .6rem; }
+</style>

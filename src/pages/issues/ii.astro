@@ -1,0 +1,178 @@
+---
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/site';
+import { currentIssue } from '../../data/issues';
+import { discussions } from '../../data/discussions';
+const path = Astro.url.pathname;
+
+const steps = [
+  { n: 'I', title: 'You write a reply', body: 'Under any paper, essay or poem. Agree, disagree, push the argument somewhere new.' },
+  { n: 'II', title: 'A review agent reads it first', body: 'Before anything is public, an AI agent checks the comment against our discussion guidelines. It looks at how you say it, not which side you take.' },
+  { n: 'III', title: 'One of three outcomes', body: 'Most comments are published right away. Unclear cases go to a student editor. Comments that break the guidelines come back to you with the reason, so you can rewrite them.' },
+];
+---
+<Base title="Issue II: In Conversation" description="Coming in Issue II: discussions under every piece, with a review agent that keeps the conversation about ideas.">
+  <header class="ii-head wrap">
+    <p class="label"><span class="numeral">Issue II</span> · <span class="soon">Coming next</span></p>
+    <h1 class="ii-head__title">In Conversation</h1>
+    <p class="ii-head__sub">
+      A paper should not end at the last sentence. In Issue II, every piece opens a discussion: readers answer the argument, the author can reply, and the conversation stays on the page.
+    </p>
+  </header>
+
+  <div class="wrap ii">
+    <section class="principle" aria-labelledby="principle-title">
+      <h2 id="principle-title" class="label">The one rule</h2>
+      <p class="principle__quote">Answer the idea, not the person.</p>
+      <div class="principle__body">
+        <p>
+          Philosophy is supposed to be uncomfortable. A strong objection can sting, and any opinion can offend someone, because everyone reads from their own life. That is not a reason to stay quiet.
+        </p>
+        <p>
+          What we will not publish is a comment whose purpose is to hurt someone rather than to say something. Disagreement is welcome. Contempt is not.
+        </p>
+      </div>
+    </section>
+
+    <section aria-labelledby="ex-title">
+      <h2 id="ex-title" class="section-title">See an example discussion</h2>
+      {discussions.map((d) => (
+        <a class="ex" href={href(`discussions/${d.id}`, path)}>
+          <span class="label ex__kicker">Example discussion · {d.comments.length} comments</span>
+          <span class="ex__q">{d.question}</span>
+          <span class="ex__sides">
+            {['freewill', 'compat', 'determinism'].map((id) => {
+              const st = d.stances.find((x) => x.id === id)!;
+              return <span class={`ex__side ex__side--${id}`}>{st.label}</span>;
+            })}
+          </span>
+          <span class="ex__cta">Open the discussion <span aria-hidden="true">→</span></span>
+        </a>
+      ))}
+    </section>
+
+    <section class="flow" aria-labelledby="flow-title">
+      <h2 id="flow-title" class="section-title">How a comment gets published</h2>
+      <ol class="steps">
+        {steps.map((s) => (
+          <li class="step">
+            <span class="step__n numeral" aria-hidden="true">{s.n}</span>
+            <h3 class="step__title">{s.title}</h3>
+            <p class="step__body">{s.body}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="rules-grid" aria-labelledby="checks-title">
+      <h2 id="checks-title" class="section-title">What the agent checks, and what it doesn’t</h2>
+      <div class="cols">
+        <div class="col">
+          <h3 class="col__title">It flags</h3>
+          <ul>
+            <li>Insults and personal attacks on the author or other readers</li>
+            <li>Slurs or attacks on people for who they are</li>
+            <li>Threats and harassment</li>
+            <li>Spam, ads and comments that have nothing to do with the piece</li>
+          </ul>
+        </div>
+        <div class="col col--ok">
+          <h3 class="col__title">It leaves alone</h3>
+          <ul>
+            <li>Disagreeing with the author, even sharply</li>
+            <li>Unpopular or uncomfortable opinions</li>
+            <li>Criticism of an argument, a source or a reading</li>
+            <li>Humor, as long as it isn’t aimed at a person</li>
+          </ul>
+        </div>
+      </div>
+      <p class="fine label">
+        The agent never decides alone on a hard case: anything unclear goes to a person. Every rejected comment comes with an explanation, and writers can ask an editor to look again.
+      </p>
+    </section>
+
+    <section class="preview" aria-labelledby="preview-title">
+      <h2 id="preview-title" class="section-title">The discussion box</h2>
+      <div class="box" aria-disabled="true">
+        <label for="c-preview" class="box__label">Respond to this piece</label>
+        <textarea id="c-preview" rows="4" disabled placeholder="Make your point. Answer the argument, not the person."></textarea>
+        <div class="box__foot">
+          <span class="label">Every comment is checked before it appears.</span>
+          <button class="btn" type="button" disabled>Opens in Issue II</button>
+        </div>
+      </div>
+    </section>
+
+    <nav class="ii-end" aria-label="Continue">
+      <a class="btn btn--ghost" href={href(`issues/${currentIssue.id}`, path)}>← Read Issue {currentIssue.numeral}</a>
+      <a class="btn btn--ghost" href={href('submit', path)}>Submit your work</a>
+    </nav>
+  </div>
+</Base>
+
+<style>
+  .ii-head { padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2.5rem, 6vw, 4rem); }
+  .soon { color: var(--orange-text); font-weight: 600; }
+  .ii-head__title { font-size: clamp(3rem, 2rem + 5vw, 6rem); font-weight: 400; font-style: italic; letter-spacing: -0.03em; margin-top: .75rem; }
+  .ii-head__sub { max-width: 36rem; margin-top: 1.25rem; color: var(--ink-2); font-size: 1.15em; line-height: 1.5; }
+
+  .ii { display: grid; gap: clamp(3.5rem, 8vw, 5.5rem); }
+  .section-title { font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.1rem); font-weight: 450; margin-bottom: 1.5rem; }
+
+  .principle { border-top: 2px solid var(--ink); padding-top: 1.25rem; display: grid; gap: 1.25rem; }
+  .principle h2 { margin: 0; }
+  .principle__quote {
+    margin: 0; font-size: clamp(2.2rem, 1.5rem + 3.2vw, 3.75rem); line-height: 1.05; letter-spacing: -0.02em;
+    font-style: italic; color: var(--blue); max-width: 16ch;
+  }
+  .principle__body { max-width: var(--measure); }
+  @media (min-width: 60rem) {
+    .principle { grid-template-columns: 1fr 1fr; column-gap: 4rem; }
+    .principle h2 { grid-column: 1 / -1; }
+    .principle__body { padding-top: .5rem; }
+  }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .step { display: grid; align-content: start; grid-template-columns: 3rem 1fr; column-gap: 1rem; padding: 1.4rem 0; border-top: 1px solid var(--rule); }
+  .step:last-child { border-bottom: 1px solid var(--rule); }
+  .step__n { grid-row: span 2; font-size: 1.5rem; line-height: 1.2; }
+  .step__title { font-size: 1.35rem; font-weight: 500; margin: 0 0 .35rem; }
+  .step__body { margin: 0; color: var(--ink-2); max-width: 38rem; }
+  @media (min-width: 60rem) {
+    .steps { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+    .step, .step:last-child { grid-template-columns: 1fr; border-bottom: 0; border-top: 2px solid var(--ink); padding-top: 1.25rem; }
+    .step__n { grid-row: auto; margin-bottom: .5rem; }
+  }
+
+  .cols { display: grid; gap: 1.25rem; }
+  @media (min-width: 48rem) { .cols { grid-template-columns: 1fr 1fr; } }
+  .col { padding: 1.5rem; background: var(--paper-2); border-top: 3px solid var(--orange); }
+  .col--ok { border-top-color: var(--blue); }
+  .col__title { font-family: var(--sans); font-size: .95rem; font-weight: 600; margin-bottom: .9rem; }
+  .col ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .55rem; font-size: 1rem; line-height: 1.45; }
+  .fine { margin: 1.25rem 0 0; max-width: 40rem; line-height: 1.5; }
+
+  .box { border: 1px solid var(--rule); padding: 1.25rem; max-width: 44rem; display: grid; gap: .6rem; }
+  .box__label { font-family: var(--sans); font-weight: 600; font-size: .95rem; }
+  .box textarea {
+    font: inherit; font-family: var(--sans); font-size: 1rem; width: 100%; resize: none;
+    padding: .8rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); color: var(--ink-2);
+    cursor: not-allowed;
+  }
+  .box__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+  .box .btn[disabled] { cursor: not-allowed; opacity: .55; }
+
+
+  .ex { display: grid; gap: .8rem; padding: clamp(1.5rem, 4vw, 2.25rem); border: 1px solid var(--rule); border-top: 3px solid var(--blue); color: inherit; text-decoration: none; max-width: 52rem; transition: background-color .15s; }
+  .ex:hover { background: var(--paper-2); }
+  .ex:hover .ex__q { color: var(--blue); }
+  .ex__kicker { color: var(--orange-text); font-weight: 600; }
+  .ex__q { font-size: clamp(1.7rem, 1.3rem + 1.8vw, 2.6rem); line-height: 1.1; letter-spacing: -0.015em; }
+  .ex__sides { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .ex__side { font-family: var(--sans); font-size: .8rem; font-weight: 600; padding: .25rem .6rem; border-radius: 99px; border: 1px solid var(--rule); }
+  .ex__side--freewill { border-color: var(--blue); color: var(--blue); }
+  .ex__side--compat { border-color: var(--orange); color: var(--orange-text); }
+  .ex__side--determinism { border-color: var(--ink-2); color: var(--ink-2); }
+  .ex__cta { font-family: var(--sans); font-weight: 600; font-size: .95rem; color: var(--blue); }
+  .ii-end { display: flex; flex-wrap: wrap; gap: .75rem; }
+</style>

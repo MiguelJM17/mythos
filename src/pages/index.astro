@@ -1,0 +1,150 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import EmptyState from '../components/EmptyState.astro';
+import { currentIssue, nextIssue } from '../data/issues';
+import { href, readingTime, SECTIONS } from '../lib/site';
+
+const path = Astro.url.pathname;
+const pieces = await getCollection('pieces', (p) => p.data.issue === currentIssue.id);
+const lead = pieces.find((p) => p.data.featured) ?? pieces[0];
+const sections = SECTIONS.map((sec) => ({ ...sec, count: pieces.filter((p) => p.data.section === sec.id).length }));
+---
+<Base>
+  <section class="intro wrap" aria-labelledby="mission">
+    <div class="intro__main">
+    <p class="label intro__issue">
+      <span class="numeral">Issue {currentIssue.numeral}</span> · “{currentIssue.theme}”
+    </p>
+    <h1 id="mission" class="intro__mission">
+      Philosophy and literature from the students who write it.
+    </h1>
+    <p class="intro__sub">
+      A student journal born in the philosophy classrooms of Miami Dade College.
+    </p>
+    </div>
+    <div class="pair" aria-hidden="true">
+      <p class="pair__word"><span lang="grc">μῦθος</span><span class="pair__gloss">the story</span></p>
+      <p class="pair__amp">&amp;</p>
+      <p class="pair__word"><span lang="grc">λόγος</span><span class="pair__gloss">the reason</span></p>
+    </div>
+  </section>
+
+  <section class="front wrap" aria-label="In this issue">
+    {lead ? (
+      <article class="lead">
+        <a class="lead__link" href={href(`read/${lead.id}`, path)}>
+          <p class="label label--accent">{lead.data.form}{lead.data.example && ' · Example'}</p>
+          <h2 class="lead__title">{lead.data.title}</h2>
+          <p class="lead__dek">{lead.data.dek}</p>
+          <p class="label">{lead.data.author} · {readingTime(lead.body)}</p>
+        </a>
+      </article>
+    ) : (
+      <EmptyState title="The first issue is still being written.">
+        <p>Pieces appear here after the first call for work.</p>
+      </EmptyState>
+    )}
+    <div class="front__rest">
+      <h2 class="label front__heading">Sections</h2>
+      <ul class="sections">
+        {sections.map((sec) => (
+          <li class="sec">
+            <a class="sec__link" href={href(`issues/${currentIssue.id}#${sec.id}`, path)}>
+              <span class="sec__name">{sec.label}</span>
+              <span class="sec__blurb">{sec.blurb}</span>
+              <span class:list={['label', 'sec__count', { 'is-empty': sec.count === 0 }]}>
+                {sec.count === 0 ? 'Open for submissions' : `${sec.count} ${sec.count === 1 ? 'piece' : 'pieces'}`}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a class="front__all label" href={href(`issues/${currentIssue.id}`, path)}>
+        See the full issue <span aria-hidden="true">→</span>
+      </a>
+      {nextIssue && (
+        <a class="next" href={href(`issues/${nextIssue.id}`, path)}>
+          <span class="label next__kicker"><span class="numeral">Issue {nextIssue.numeral}</span> · Coming next</span>
+          <span class="next__title">{nextIssue.theme}</span>
+          <span class="next__text">Discussions under every piece, kept about ideas.</span>
+        </a>
+      )}
+    </div>
+  </section>
+
+  <section class="call" aria-labelledby="call-title">
+    <div class="wrap call__inner">
+      <div>
+        <h2 id="call-title" class="call__title">Your paper got a grade. <em>Give it readers.</em></h2>
+        <p class="call__text">
+          We read philosophic papers for Philosophy, and short essays and poems for Literature. Every submission is read without the author’s name.
+        </p>
+      </div>
+      <a class="btn btn--light" href={href('submit', path)}>Send your work</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro { padding-block: clamp(3rem, 9vw, 6.5rem) clamp(2.5rem, 6vw, 4rem); display: grid; gap: 3rem; }
+  .pair { display: none; }
+  @media (min-width: 60rem) {
+    .intro { grid-template-columns: 1fr auto; align-items: end; }
+    .pair { display: grid; justify-items: end; gap: .25rem; padding-bottom: .5rem; }
+    .pair p { margin: 0; }
+    .pair__word { display: grid; justify-items: end; font-style: italic; font-size: 3.4rem; line-height: 1; color: var(--blue); }
+    .pair__gloss { font-family: var(--sans); font-style: normal; font-size: .8rem; color: var(--ink-2); margin-top: .35rem; }
+    .pair__amp { font-style: italic; font-size: 2rem; color: var(--orange); line-height: 1; margin: .6rem 0 !important; }
+  }
+  .intro__issue { margin-bottom: 1.4rem; }
+  .intro__issue .numeral { font-size: 1rem; }
+  .intro__mission {
+    font-size: clamp(2.5rem, 1.6rem + 4.4vw, 5.25rem);
+    font-weight: 400; line-height: 1.02; letter-spacing: -0.025em;
+    max-width: 15ch;
+  }
+  .intro__sub { margin-top: 1.5rem; max-width: 36rem; color: var(--ink-2); font-size: 1.15em; line-height: 1.5; }
+
+  .front { display: grid; gap: clamp(2.5rem, 6vw, 4rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+  .lead { border-top: 2px solid var(--ink); padding-top: 1.5rem; }
+  .lead__link { color: inherit; text-decoration: none; display: grid; gap: .9rem; }
+  .lead__link p { margin: 0; }
+  .lead__title {
+    font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4.25rem); line-height: 1.02; font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .lead__dek { font-style: italic; font-size: clamp(1.2rem, 1.1rem + .5vw, 1.5rem); color: var(--ink-2); line-height: 1.35; max-width: 32rem; }
+  .lead__link:hover .lead__title { color: var(--blue); }
+
+  .front__heading { margin: 0 0 .25rem; padding-top: 1.5rem; border-top: 2px solid var(--ink); }
+  .front__all { display: inline-block; margin-top: 1.25rem; color: var(--blue); font-weight: 600; }
+
+  .next { display: grid; gap: .3rem; margin-top: 2rem; padding: 1.25rem 1.25rem 1.35rem; background: var(--paper-2); border-left: 3px solid var(--orange); color: inherit; text-decoration: none; }
+  .next__kicker { color: var(--orange-text); font-weight: 600; }
+  .next__title { font-size: 1.6rem; font-style: italic; line-height: 1.1; }
+  .next__text { color: var(--ink-2); font-size: 1rem; }
+  .next:hover .next__title { color: var(--blue); }
+  .sections { list-style: none; margin: 0; padding: 0; }
+  .sec { border-bottom: 1px solid var(--rule); }
+  .sec__link { display: grid; gap: .3rem; padding: 1.3rem 0; color: inherit; text-decoration: none; }
+  .sec__name { font-size: 1.7rem; line-height: 1.1; }
+  .sec__blurb { font-style: italic; color: var(--ink-2); font-size: 1rem; line-height: 1.4; }
+  .sec__count { color: var(--blue); font-weight: 600; }
+  .sec__count.is-empty { color: var(--orange-text); }
+  .sec__link:hover .sec__name { color: var(--blue); }
+
+  @media (min-width: 60rem) {
+    .front { grid-template-columns: 1.45fr 1fr; align-items: start; }
+    .lead { padding-right: 2rem; }
+  }
+
+  .call { background: var(--blue); color: var(--blue-ink); }
+  .call__inner { padding-block: clamp(3rem, 8vw, 5rem); display: grid; gap: 2rem; align-items: end; }
+  .call__title { font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem); font-weight: 400; line-height: 1.05; max-width: 18ch; }
+  .call__title em { color: inherit; }
+  .call__text { margin: 1rem 0 0; max-width: 32rem; opacity: .9; }
+  @media (min-width: 48rem) { .call__inner { grid-template-columns: 1fr auto; } }
+  :global([data-theme='dark']) .call { background: #133b7e; color: var(--ink); }
+  :global([data-theme='dark']) .call .btn--light { background: var(--ink); color: #0e1a30; border-color: var(--ink); }
+</style>

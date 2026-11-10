@@ -1,0 +1,190 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+import { STAGES } from '../lib/submissions';
+const path = Astro.url.pathname;
+---
+<Base title="Track a submission" description="Check where your submission to Mythos stands.">
+  <div class="wrap track">
+    <header class="track__head">
+      <p class="label">Track a submission</p>
+      <h1 class="track__title">Where is my piece?</h1>
+      <p class="track__sub">Enter the code you got when you submitted. To try it now, use the sample code <button type="button" class="linkish" data-fill="MYT-0001">MYT-0001</button>.</p>
+    </header>
+
+    <form class="lookup" id="lookup" novalidate>
+      <label for="code" class="visually-hidden">Submission code</label>
+      <input id="code" name="code" type="text" placeholder="MYT-0000" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="code-err" />
+      <button class="btn" type="submit">Check status</button>
+      <p class="err" id="code-err" role="alert"></p>
+    </form>
+
+    <div id="result" aria-live="polite">
+      <!-- Shown before any lookup -->
+      <div class="idle" id="idle">
+        <ol class="stages stages--preview" aria-label="How review works">
+          {STAGES.map((s) => (
+            <li class="stage">
+              <span class="stage__dot" aria-hidden="true"></span>
+              <span class="stage__label">{s.label}</span>
+              <span class="stage__note">{s.note}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <!-- Not found -->
+      <div class="notfound" id="notfound" hidden>
+        <p class="notfound__title">We couldn’t find <span id="nf-code"></span>.</p>
+        <p class="label">Check the code for typos. In this demo, codes are only remembered in the browser where you submitted. <a href={href('submit', path)}>Submit a piece</a> to get one.</p>
+      </div>
+
+      <!-- Found -->
+      <article class="status" id="status" hidden aria-labelledby="st-title">
+        <p class="label"><span id="st-code"></span> · <span id="st-type"></span> · submitted <span id="st-date"></span></p>
+        <h2 class="status__title" id="st-title"></h2>
+        <ol class="stages" id="st-stages" aria-label="Review progress"></ol>
+      </article>
+    </div>
+
+    <section class="mine" id="mine" hidden aria-labelledby="mine-title">
+      <h2 id="mine-title" class="label">Submitted from this browser</h2>
+      <ul id="mine-list"></ul>
+    </section>
+  </div>
+</Base>
+
+<script>
+  import { STAGES, find, loadAll, normalize } from '../lib/submissions';
+
+  const form = document.getElementById('lookup') as HTMLFormElement;
+  const input = document.getElementById('code') as HTMLInputElement;
+  const err = document.getElementById('code-err')!;
+  const views = {
+    idle: document.getElementById('idle')!,
+    notfound: document.getElementById('notfound')!,
+    status: document.getElementById('status')!,
+  };
+
+  function show(view: keyof typeof views) {
+    for (const [k, el] of Object.entries(views)) el.hidden = k !== view;
+  }
+
+  function render(raw: string) {
+    err.textContent = '';
+    input.removeAttribute('aria-invalid');
+    if (!raw.trim()) {
+      err.textContent = 'Enter your submission code.';
+      input.setAttribute('aria-invalid', 'true');
+      input.focus();
+      return;
+    }
+    const code = normalize(raw);
+    input.value = code;
+    const s = find(code);
+    if (!s) {
+      document.getElementById('nf-code')!.textContent = code;
+      show('notfound');
+      return;
+    }
+    document.getElementById('st-code')!.textContent = s.code;
+    document.getElementById('st-type')!.textContent = s.type;
+    document.getElementById('st-date')!.textContent = new Date(s.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('st-title')!.textContent = s.title;
+    const list = document.getElementById('st-stages')!;
+    list.replaceChildren(...STAGES.map((st, i) => {
+      const li = document.createElement('li');
+      li.className = 'stage ' + (i < s.stage ? 'is-done' : i === s.stage ? 'is-current' : 'is-todo');
+      if (i === s.stage) li.setAttribute('aria-current', 'step');
+      li.innerHTML = `<span class="stage__dot" aria-hidden="true"></span><span class="stage__label"></span><span class="stage__note"></span>`;
+      li.querySelector('.stage__label')!.textContent = st.label + (i === s.stage ? ' · now' : i < s.stage ? ' · done' : '');
+      li.querySelector('.stage__note')!.textContent = st.note;
+      return li;
+    }));
+    show('status');
+    if (location.hash.slice(1) !== code) history.replaceState(null, '', '#' + code);
+  }
+
+  form.addEventListener('submit', (e) => { e.preventDefault(); render(input.value); });
+  document.querySelectorAll<HTMLButtonElement>('[data-fill]').forEach((b) =>
+    b.addEventListener('click', () => { input.value = b.dataset.fill!; render(input.value); }));
+
+  // Deep link: track.html#MYT-1234
+  const fromHash = () => { const h = decodeURIComponent(location.hash.slice(1)); if (h) { input.value = h; render(h); } };
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+
+  // Submissions saved on this device
+  const mine = loadAll();
+  if (mine.length) {
+    const ul = document.getElementById('mine-list')!;
+    ul.replaceChildren(...mine.map((s) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'linkish';
+      b.textContent = s.code;
+      b.addEventListener('click', () => { input.value = s.code; render(s.code); input.scrollIntoView({ block: 'center' }); });
+      li.append(b, document.createTextNode(` · ${s.title}`));
+      return li;
+    }));
+    document.getElementById('mine')!.hidden = false;
+  }
+</script>
+
+<style is:global>
+  .track { max-width: 48rem; }
+  .track__head { padding-block: clamp(3rem, 8vw, 5.5rem) 2rem; }
+  .track__title { font-size: clamp(2.4rem, 1.6rem + 3.8vw, 4.25rem); font-weight: 400; letter-spacing: -0.025em; margin-top: .75rem; }
+  .track__sub { color: var(--ink-2); margin-top: 1rem; }
+  .linkish {
+    font: inherit; color: var(--blue); background: none; border: 0; padding: 0; cursor: pointer;
+    text-decoration: underline; text-underline-offset: .18em; font-family: var(--sans); font-weight: 600; letter-spacing: .04em;
+  }
+
+  .lookup { display: grid; grid-template-columns: 1fr auto; gap: .6rem; margin-bottom: 2.75rem; }
+  .lookup input {
+    font-family: var(--sans); font-size: 1.15rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink); background: var(--paper); border: 1px solid var(--ink-2); border-radius: var(--radius);
+    padding: .7rem .9rem; min-height: 48px; width: 100%; min-width: 0;
+  }
+  .lookup input::placeholder { color: var(--ink-2); opacity: .6; }
+  .lookup input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .lookup input[aria-invalid='true'] { border-color: var(--danger); }
+  .err { grid-column: 1 / -1; margin: 0; font-family: var(--sans); font-size: .85rem; font-weight: 500; color: var(--danger); }
+  .err:empty { display: none; }
+
+  .status { border-top: 2px solid var(--ink); padding-top: 1.25rem; }
+  .status > p { margin: 0; }
+  .status__title { font-size: clamp(1.7rem, 1.4rem + 1.4vw, 2.3rem); font-weight: 400; margin: .5rem 0 2rem; }
+
+  .stages { list-style: none; margin: 0; padding: 0; }
+  .stage {
+    position: relative; display: grid; grid-template-columns: 1.5rem 1fr; column-gap: 1rem;
+    padding-bottom: 1.6rem;
+  }
+  .stage::before { /* connecting line */
+    content: ''; position: absolute; left: calc(.75rem - 1px); top: 1.4rem; bottom: 0; width: 2px; background: var(--rule);
+  }
+  .stage:last-child::before { display: none; }
+  .stage__dot {
+    grid-row: span 2; width: 1rem; height: 1rem; margin: .35rem auto 0; border-radius: 50%;
+    border: 2px solid var(--rule); background: var(--paper); position: relative; z-index: 1;
+  }
+  .stage__label { font-family: var(--sans); font-weight: 600; font-size: .98rem; }
+  .stage__note { color: var(--ink-2); font-size: .98rem; line-height: 1.45; }
+  .stage.is-done .stage__dot { background: var(--blue); border-color: var(--blue); }
+  .stage.is-done::before { background: var(--blue); }
+  .stage.is-current .stage__dot { background: var(--orange); border-color: var(--orange); box-shadow: 0 0 0 5px color-mix(in srgb, var(--orange) 22%, transparent); }
+  .stage.is-current .stage__label { color: var(--blue); }
+  .stage.is-todo .stage__label { color: var(--ink-2); font-weight: 500; }
+  .stages--preview .stage__label { color: var(--ink); }
+
+  .notfound { border: 1px dashed var(--rule); padding: 1.5rem; }
+  .notfound__title { font-size: 1.3rem; margin: 0 0 .4rem; }
+  .notfound__title span { font-family: var(--sans); font-weight: 600; letter-spacing: .05em; }
+  .notfound .label { margin: 0; line-height: 1.5; }
+
+  .mine { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+  .mine h2 { margin: 0 0 .75rem; }
+  .mine ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; font-size: 1rem; }
+</style>

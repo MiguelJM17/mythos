@@ -1,0 +1,16 @@
+---
+interface Props { tags: string[]; label?: string }
+const { tags, label = 'Topics' } = Astro.props;
+---
+{tags.length > 0 && (
+  <ul class="tags" aria-label={label}>
+    {tags.map((t) => <li>{t}</li>)}
+  </ul>
+)}
+<style>
+  .tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem .5rem; }
+  .tags li {
+    font-family: var(--sans); font-size: .78rem; font-weight: 500; letter-spacing: .01em;
+    color: var(--ink-2); padding: .2rem .55rem; border: 1px solid var(--rule); border-radius: 99px;
+  }
+</style>

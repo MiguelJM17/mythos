@@ -1,0 +1,29 @@
+---
+import { href } from '../lib/site';
+const path = Astro.url.pathname;
+---
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <p class="site-footer__line">
+      <em>Mythos</em> joins the two halves of thought: <em>mythos</em>, the story, and <em>logos</em>, the reason.
+    </p>
+    <ul class="site-footer__links label">
+      <li><a href={href('about', path)}>About</a></li>
+      <li><a href={href('submit', path)}>Submit</a></li>
+      <li><a href={href('track', path)}>Track a submission</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 1px solid var(--rule); margin-top: clamp(4rem, 10vw, 7rem); }
+  .site-footer__inner { padding-block: 2.5rem 3rem; display: grid; gap: 1.25rem; }
+  .site-footer__line { font-size: 1.1rem; margin: 0; color: var(--ink); text-wrap: balance; }
+  .site-footer__links { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .site-footer__links a { color: var(--ink); text-decoration: none; }
+  .site-footer__links a:hover { color: var(--blue); text-decoration: underline; }
+  @media (min-width: 48rem) {
+    .site-footer__inner { grid-template-columns: 1fr auto; align-items: center; }
+    .site-footer__line { white-space: nowrap; }
+  }
+</style>

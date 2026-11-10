@@ -1,0 +1,101 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Tags from '../../components/Tags.astro';
+import { getIssue } from '../../data/issues';
+import { discussions } from '../../data/discussions';
+import { href, readingTime, formatDate, SECTIONS } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const pieces = await getCollection('pieces');
+  return pieces.map((piece) => ({ params: { slug: piece.id }, props: { piece } }));
+}
+const { piece } = Astro.props;
+const { Content } = await render(piece);
+const d = piece.data;
+const issue = getIssue(d.issue);
+const path = Astro.url.pathname;
+const discussion = discussions.find((x) => x.relatedSlug === piece.id);
+const section = SECTIONS.find((s) => s.id === d.section)!;
+
+// References use *italics* for titles; escape everything else.
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const refHtml = (s: string) => esc(s).replace(/\*(.+?)\*/g, '<em>$1</em>');
+---
+<Base title={d.title} description={d.dek}>
+  <article class="piece">
+    <header class="piece__head wrap">
+      <div class="piece__head-inner">
+        <p class="label">
+          {issue && <a href={href(`issues/${issue.id}#${section.id}`, path)}>{section.label}</a>}
+          {' · '}<span class="label--accent">{d.form}</span>
+          {d.example && <> · <span class="sample-flag">Example</span></>}
+        </p>
+        <h1 class="piece__title">{d.title}</h1>
+        <p class="piece__dek">{d.dek}</p>
+        <div class="piece__meta">
+          <p class="piece__byline">By {d.author}</p>
+          <p class="label">{formatDate(d.date)} · {readingTime(piece.body)}</p>
+          {d.context && <p class="label piece__context">{d.context}</p>}
+        </div>
+        <Tags tags={d.tags} />
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class:list={['prose', 'piece__body', { 'prose--poem': d.form === 'Poem' }]}>
+        <Content />
+      </div>
+
+      {d.references.length > 0 && (
+        <section class="refs" aria-labelledby="refs-title">
+          <h2 id="refs-title" class="label">Works Cited</h2>
+          <ol>
+            {d.references.map((r) => <li set:html={refHtml(r)} />)}
+          </ol>
+        </section>
+      )}
+
+      {discussion && (
+        <a class="discuss" href={href(`discussions/${discussion.id}`, path)}>
+          <span class="label discuss__kicker">Discussion · example</span>
+          <span class="discuss__q">{discussion.question}</span>
+          <span class="discuss__cta">Join the discussion <span aria-hidden="true">→</span></span>
+        </a>
+      )}
+
+      <nav class="piece__end" aria-label="After reading">
+        {issue && <a class="btn btn--ghost" href={href(`issues/${issue.id}`, path)}>← Back to Issue {issue.numeral}</a>}
+        <a class="btn btn--ghost" href={href('submit', path)}>Submit your own</a>
+      </nav>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .piece__head { padding-block: clamp(2.5rem, 8vw, 5rem) clamp(2rem, 5vw, 3rem); }
+  .piece__head-inner { max-width: 44rem; margin-inline: auto; display: grid; gap: 1.1rem; }
+  .piece__head-inner p { margin: 0; }
+  .piece__head .label a { color: inherit; }
+  .sample-flag { color: var(--orange-text); font-weight: 600; }
+  .piece__title { font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4rem); font-weight: 400; letter-spacing: -0.022em; line-height: 1.04; }
+  .piece__dek { font-style: italic; font-size: clamp(1.2rem, 1.1rem + .5vw, 1.5rem); line-height: 1.35; color: var(--ink-2); }
+  .piece__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; padding-top: .5rem; border-top: 1px solid var(--rule); }
+  .piece__byline { font-family: var(--sans); font-weight: 600; font-size: .95rem; }
+  .piece__context { flex-basis: 100%; }
+
+  .piece__body { margin-inline: auto; }
+  .prose--poem { font-size: 1.12em; }
+
+  .refs { max-width: var(--measure); margin: 3.5rem auto 0; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+  .refs h2 { margin-bottom: .9rem; }
+  .refs ol { list-style: none; margin: 0; padding: 0; font-size: .92rem; line-height: 1.5; color: var(--ink-2); }
+  .refs li { margin-bottom: .7rem; padding-left: 2em; text-indent: -2em; } /* hanging indent */
+
+  .discuss { display: grid; gap: .4rem; max-width: var(--measure); margin: 3rem auto 0; padding: 1.25rem 1.35rem; background: var(--paper-2); border-left: 3px solid var(--blue); color: inherit; text-decoration: none; }
+  .discuss__kicker { color: var(--orange-text); font-weight: 600; }
+  .discuss__q { font-size: 1.5rem; line-height: 1.15; }
+  .discuss__cta { font-family: var(--sans); font-weight: 600; font-size: .9rem; color: var(--blue); }
+  .discuss:hover .discuss__q { color: var(--blue); }
+  .piece__end { max-width: var(--measure); margin: 3.5rem auto 0; display: flex; flex-wrap: wrap; gap: .75rem; }
+</style>

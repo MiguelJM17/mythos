@@ -1,0 +1,34 @@
+---
+import { href } from '../lib/site';
+interface Props {
+  slug: string; title: string; dek: string; author: string;
+  form: string; readTime: string; showType?: boolean;
+}
+const { slug, title, dek, author, form, readTime, showType = true } = Astro.props;
+const path = Astro.url.pathname;
+---
+<li class="item">
+  <a class="item__link" href={href(`read/${slug}`, path)}>
+    <span class="item__num numeral" aria-hidden="true"></span>
+    <span class="item__body">
+      {showType && <span class="label label--accent item__type">{form}</span>}
+      <span class="item__title">{title}</span>
+      <span class="item__dek">{dek}</span>
+      <span class="label item__meta">{author} · {readTime}</span>
+    </span>
+  </a>
+</li>
+<style>
+  .item { counter-increment: piece; border-top: 1px solid var(--rule); }
+  .item:last-child { border-bottom: 1px solid var(--rule); }
+  .item__link {
+    display: grid; grid-template-columns: 2.5rem 1fr; gap: .25rem 1rem;
+    padding: 1.4rem 0; color: inherit; text-decoration: none;
+  }
+  .item__num::before { content: counter(piece, upper-roman) '.'; font-size: 1.1rem; }
+  .item__body { display: grid; gap: .3rem; }
+  .item__title { font-size: clamp(1.35rem, 1.2rem + .6vw, 1.7rem); line-height: 1.15; font-weight: 450; }
+  .item__dek { font-style: italic; color: var(--ink-2); font-size: 1.02rem; line-height: 1.4; }
+  .item__meta { margin-top: .2rem; }
+  .item__link:hover .item__title { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .15em; }
+</style>

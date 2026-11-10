@@ -1,0 +1,81 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PieceIndex from '../../components/PieceIndex.astro';
+import PieceIndexItem from '../../components/PieceIndexItem.astro';
+import { issues, nextIssue, type Issue } from '../../data/issues';
+import { href, readingTime, SECTIONS } from '../../lib/site';
+
+export function getStaticPaths() {
+  return issues.filter((i) => !i.upcoming).map((issue) => ({ params: { id: issue.id }, props: { issue } }));
+}
+const { issue } = Astro.props as { issue: Issue };
+const path = Astro.url.pathname;
+const pieces = await getCollection('pieces', (p) => p.data.issue === issue.id);
+const sections = SECTIONS.map((s) => ({ ...s, items: pieces.filter((p) => p.data.section === s.id) }));
+---
+<Base title={`Issue ${issue.numeral}: ${issue.theme}`}>
+  <header class="issue-head wrap">
+    <p class="label"><span class="numeral">Issue {issue.numeral}</span></p>
+    <h1 class="issue-head__title">{issue.theme}</h1>
+  </header>
+
+  <div class="issue wrap">
+    <aside class="letter" aria-labelledby="letter-title">
+      <h2 id="letter-title" class="label">From the editors</h2>
+      {issue.letter.map((para) => <p>{para}</p>)}
+      <p class="label letter__sign">Ian Rodriguez, Miguel Jazzan &amp; Lyan Jimenez, Founding Editors</p>
+    </aside>
+
+    <div class="contents">
+      {sections.map((s) => (
+        <section class="section" id={s.id} aria-labelledby={`sec-${s.id}`}>
+          <div class="section__head">
+            <h2 class="section__title" id={`sec-${s.id}`}>{s.label}</h2>
+            <p class="label">{s.blurb}</p>
+          </div>
+          <PieceIndex count={s.items.length} empty={`No ${s.label.toLowerCase()} yet.`}
+            emptyNote="This section fills with the first call for work.">
+            {s.items.map((p) => (
+              <PieceIndexItem slug={p.id} title={p.data.title} dek={p.data.dek} author={p.data.author}
+                form={p.data.form} readTime={readingTime(p.body)} />
+            ))}
+            <a slot="empty" class="empty-link" href={href('submit', path)}>Be the first to submit</a>
+          </PieceIndex>
+        </section>
+      ))}
+      {nextIssue && (
+        <a class="next" href={href(`issues/${nextIssue.id}`, path)}>
+          <span class="label next__kicker"><span class="numeral">Issue {nextIssue.numeral}</span> · Coming next</span>
+          <span class="next__title">{nextIssue.theme}</span>
+          <span class="next__text">Discussions under every piece, kept about ideas.</span>
+        </a>
+      )}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .issue-head { padding-block: clamp(3rem, 8vw, 5.5rem) 2.5rem; }
+  .issue-head__title { font-size: clamp(3rem, 2rem + 5vw, 6rem); font-weight: 400; font-style: italic; letter-spacing: -0.03em; margin-top: .75rem; }
+  .issue { display: grid; gap: 3rem; }
+  .letter { max-width: var(--measure); font-size: 1.05rem; color: var(--ink-2); border-top: 2px solid var(--ink); padding-top: 1.25rem; }
+  .letter h2 { margin-bottom: 1rem; }
+  .letter__sign { margin-top: 1.5rem; }
+  .contents { display: grid; gap: 3.5rem; }
+  .section__head { margin-bottom: .9rem; display: grid; gap: .25rem; }
+  .section__head p { margin: 0; }
+  .section__title { font-size: 1.9rem; font-weight: 450; }
+
+  .next { display: grid; gap: .3rem; margin-top: 2rem; padding: 1.25rem 1.25rem 1.35rem; background: var(--paper-2); border-left: 3px solid var(--orange); color: inherit; text-decoration: none; }
+  .next__kicker { color: var(--orange-text); font-weight: 600; }
+  .next__title { font-size: 1.6rem; font-style: italic; line-height: 1.1; }
+  .next__text { color: var(--ink-2); font-size: 1rem; }
+  .next:hover .next__title { color: var(--blue); }
+  .next { margin-top: 0; }
+  .empty-link { font-family: var(--sans); font-weight: 600; font-size: .9rem; display: inline-block; margin-top: .4rem; }
+  @media (min-width: 60rem) {
+    .issue { grid-template-columns: 19rem 1fr; gap: 5rem; }
+    .letter { position: sticky; top: 2rem; align-self: start; }
+  }
+</style>

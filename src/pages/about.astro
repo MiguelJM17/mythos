@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+const path = Astro.url.pathname;
+---
+<Base title="About" description="What Mythos is and why it exists.">
+  <div class="wrap about">
+    <header class="about__head">
+      <p class="label">About</p>
+      <h1 class="about__title">Two old words for <em>speech</em>.</h1>
+    </header>
+
+    <div class="about__grid">
+      <div class="prose about__text">
+        <p>
+          The Greeks had two words for what we say. <em lang="grc-Latn">Logos</em> is the account that can be argued with: the reason, the proof, the step that follows from the last one. <em lang="grc-Latn">Mythos</em> is the story: the thing told, remembered and passed along. Philosophy has spent most of its history pretending it only needs the first. We think it needs both.
+        </p>
+        <h2>Why it exists</h2>
+        <p>
+          In the philosophy classes at Miami Dade College, students write philosophic papers that start real arguments: about free will, about what we owe each other, about what a mind is. The papers get discussed, graded and returned. Then they disappear.
+        </p>
+        <p>
+          <em>Mythos</em> gives that work somewhere to go. It publishes the strongest papers alongside short essays and poems, so a reader who would never open an academic journal still finds a way in, and a writer who argues in prose can sit next to one who argues in verse.
+        </p>
+        <h2>Two sections</h2>
+        <dl class="kinds">
+          <div><dt>Philosophy</dt><dd>Philosophic papers: a thesis, the strongest objection to it, and a reply. 1,000–2,000 words.</dd></div>
+          <div><dt>Literature</dt><dd>Short essays (300–1,000 words) and poems in any form.</dd></div>
+        </dl>
+        <h2>Format</h2>
+        <p>Digital first, readable on a phone between classes. A print edition may come later.</p>
+      </div>
+
+      <aside class="masthead" aria-labelledby="masthead-title">
+        <h2 id="masthead-title" class="label">Masthead</h2>
+        <dl>
+          <dt>Founding Editors</dt>
+          <dd>Ian Rodriguez</dd>
+          <dd>Miguel Jazzan</dd>
+          <dd>Lyan Jimenez</dd>
+        </dl>
+        <p class="label masthead__note">
+          An independent student proposal born at Miami Dade College. <em>Mythos</em> is not an official publication of the college.
+        </p>
+        <a class="btn" href={href('submit', path)}>Submit your work</a>
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .about__head { padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2rem, 5vw, 3.5rem); }
+  .about__title { font-size: clamp(2.6rem, 1.7rem + 4.2vw, 5rem); font-weight: 400; letter-spacing: -0.025em; margin-top: .75rem; max-width: 14ch; }
+  .about__title em { color: var(--blue); }
+  .about__grid { display: grid; gap: 3.5rem; }
+  .about__text > p:first-of-type::first-letter { all: unset; }
+  .about__text > p:first-of-type { font-size: 1.15em; line-height: 1.55; }
+  .kinds { margin: 0 0 1.2em; display: grid; gap: 1rem; }
+  .kinds div { border-top: 1px solid var(--rule); padding-top: .8rem; }
+  .kinds dt { font-weight: 550; }
+  .kinds dd { margin: .15rem 0 0; color: var(--ink-2); }
+  .masthead { border-top: 2px solid var(--ink); padding-top: 1.25rem; display: grid; gap: 1.25rem; align-content: start; }
+  .masthead h2 { margin: 0; }
+  .masthead dl { margin: 0; }
+  .masthead dt { font-family: var(--sans); font-weight: 600; font-size: .9rem; margin-bottom: .3rem; }
+  .masthead dd { margin: 0; font-size: 1.25rem; }
+  .masthead__note { margin: 0; line-height: 1.5; }
+  .masthead .btn { justify-self: start; }
+  @media (min-width: 60rem) {
+    .about__grid { grid-template-columns: minmax(0, var(--measure)) 17rem; justify-content: space-between; }
+    .masthead { position: sticky; top: 2rem; }
+  }
+</style>

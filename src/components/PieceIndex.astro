@@ -1,0 +1,14 @@
+---
+/** Table-of-contents list. Use with <PieceIndexItem>. Pass `empty` text to render an empty state when no items. */
+import EmptyState from './EmptyState.astro';
+interface Props { count: number; empty?: string; emptyNote?: string; label?: string }
+const { count, empty = 'Nothing here yet.', emptyNote = 'New work appears here when an issue is published.', label } = Astro.props;
+---
+{count === 0 ? (
+  <EmptyState title={empty}><p>{emptyNote}</p><slot name="empty" /></EmptyState>
+) : (
+  <ol class="piece-index" aria-label={label}><slot /></ol>
+)}
+<style>
+  .piece-index { list-style: none; margin: 0; padding: 0; counter-reset: piece; }
+</style>

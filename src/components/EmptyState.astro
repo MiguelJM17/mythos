@@ -1,0 +1,18 @@
+---
+interface Props { title: string }
+const { title } = Astro.props;
+---
+<div class="empty" role="status">
+  <span class="empty__mark numeral" aria-hidden="true">§</span>
+  <p class="empty__title">{title}</p>
+  <div class="empty__body label"><slot /></div>
+</div>
+<style>
+  .empty {
+    border: 1px dashed var(--rule); padding: 2rem 1.5rem; text-align: center;
+    display: grid; justify-items: center; gap: .35rem;
+  }
+  .empty__mark { font-size: 2rem; line-height: 1; }
+  .empty__title { margin: 0; font-size: 1.15rem; }
+  .empty__body :global(p) { margin: 0; }
+</style>

@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+import { currentIssue } from '../data/issues';
+const path = Astro.url.pathname;
+---
+<Base title="Page not found">
+  <section class="wrap nf">
+    <p class="numeral nf__code" aria-hidden="true">CDIV</p>
+    <h1 class="nf__title">This page was never written.</h1>
+    <p class="nf__text">Or it was, and it was lost, like most of Aristotle’s dialogues. Either way, there is nothing at this address.</p>
+    <div class="nf__actions">
+      <a class="btn" href={href('', path)}>Go to the front page</a>
+      <a class="btn btn--ghost" href={href(`issues/${currentIssue.id}`, path)}>Read Issue {currentIssue.numeral}</a>
+    </div>
+  </section>
+</Base>
+<style>
+  .nf { padding-block: clamp(4rem, 12vw, 8rem); max-width: 48rem; }
+  .nf__code { font-size: clamp(3rem, 2rem + 6vw, 6rem); margin: 0; line-height: 1; }
+  .nf__title { font-size: clamp(2rem, 1.5rem + 2.5vw, 3.25rem); font-weight: 400; margin: 1rem 0; }
+  .nf__text { color: var(--ink-2); max-width: 32rem; }
+  .nf__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+</style>

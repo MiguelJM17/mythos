@@ -1,0 +1,281 @@
+---
+import Base from '../../layouts/Base.astro';
+import { discussions, type Discussion } from '../../data/discussions';
+import { href } from '../../lib/site';
+
+export function getStaticPaths() {
+  return discussions.map((d) => ({ params: { id: d.id }, props: { d } }));
+}
+const { d } = Astro.props as { d: Discussion };
+const path = Astro.url.pathname;
+// Columns: free will on the left, compatibilism in the middle, determinism on the right.
+const order = ['freewill', 'compat', 'determinism'] as const;
+const stances = order.map((id) => d.stances.find((s) => s.id === id)!);
+---
+<Base title={d.title} description={d.question}>
+  <header class="dz-head wrap">
+    <p class="label">
+      <a href={href('issues/ii', path)}><span class="numeral">Issue II</span> · Discussions</a>{' · '}<span class="dz-flag">Example discussion</span>
+    </p>
+    <h1 class="dz-title">{d.question}</h1>
+    <p class="dz-intro">{d.intro}</p>
+    {d.relatedSlug && (
+      <p class="label dz-related">
+        Started from: <a href={href(`read/${d.relatedSlug}`, path)}>“Our Lives May Not Be Written in Advance, but They Bear Our Name”</a>
+      </p>
+    )}
+  </header>
+
+  <div class="wrap">
+    <!-- Side filter: only shown on small screens, where three columns don't fit -->
+    <div class="dz-filter" role="group" aria-label="Show comments from">
+      {stances.map((s, i) => (
+        <button type="button" class="dz-filter__btn" data-side={s.id} aria-pressed={i === 1 ? 'true' : 'false'}>
+          {s.label} <span class="dz-count" data-count={s.id}>{d.comments.filter((c) => c.side === s.id).length}</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="dz-board" data-active="compat">
+      {stances.map((s) => {
+        const items = d.comments.filter((c) => c.side === s.id);
+        return (
+          <section class={`dz-col dz-col--${s.id}`} data-side={s.id} aria-labelledby={`h-${s.id}`}>
+            <header class="dz-col__head">
+              <h2 id={`h-${s.id}`} class="dz-col__title">{s.label}</h2>
+              <p class="dz-col__claim">{s.claim}</p>
+            </header>
+            {s.thinkers && s.thinkers.length > 0 && (
+              <details class="dz-thinkers" open>
+                <summary class="label">Thinkers on this side</summary>
+                <ul>
+                  {s.thinkers.map((t) => (
+                    <li>
+                      <span class="dz-t__name">{t.name}</span>
+                      <span class="dz-t__work">{t.work}</span>
+                      <span class="dz-t__idea">{t.idea}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            <ol class="dz-list" data-list={s.id}>
+              {items.map((c) => (
+                <li class="dz-c">
+                  <p class="dz-c__body">{c.body}</p>
+                  <p class="dz-c__meta label">{c.author} · <span class="dz-c__tag">Example comment</span></p>
+                </li>
+              ))}
+              {d.returned?.side === s.id && (
+                <li class="dz-c dz-c--returned">
+                  <p class="dz-c__meta label"><span class="dz-returned-tag">Returned to its writer</span></p>
+                  <p class="dz-c__note">{d.returned.reason}</p>
+                </li>
+              )}
+            </ol>
+            {items.length === 0 && <p class="dz-empty label">No comments on this side yet.</p>}
+          </section>
+        );
+      })}
+    </div>
+
+    <section class="dz-compose" aria-labelledby="compose-title">
+      <h2 id="compose-title" class="dz-compose__title">Add your view</h2>
+      <p class="label dz-compose__note">
+        Demo: your comment is only saved in this browser and only you can see it. In the real journal, the review agent would read it before it appears.
+      </p>
+      <form id="dz-form" novalidate>
+        <fieldset class="dz-sides">
+          <legend>Where do you stand?</legend>
+          {stances.map((s, i) => (
+            <label class="dz-side">
+              <input type="radio" name="side" value={s.id} checked={i === 1} />
+              <span>{s.label}</span>
+            </label>
+          ))}
+        </fieldset>
+        <label for="dz-text" class="visually-hidden">Your comment</label>
+        <textarea id="dz-text" name="text" rows="4" maxlength="800" placeholder="Make your point. Answer the argument, not the person." aria-describedby="dz-err dz-len"></textarea>
+        <div class="dz-form__foot">
+          <p class="label" id="dz-len" aria-live="polite">0 / 800</p>
+          <button class="btn" type="submit">Post comment</button>
+        </div>
+        <p class="dz-err" id="dz-err" role="alert"></p>
+      </form>
+    </section>
+  </div>
+</Base>
+
+<script define:vars={{ discussionId: d.id }}>
+  const KEY = 'mythos-discussion-' + discussionId;
+  const board = document.querySelector('.dz-board');
+  const filterBtns = document.querySelectorAll('.dz-filter__btn');
+  const form = document.getElementById('dz-form');
+  const text = document.getElementById('dz-text');
+  const err = document.getElementById('dz-err');
+  const len = document.getElementById('dz-len');
+
+  // Mobile side filter
+  function activate(side) {
+    board.dataset.active = side;
+    filterBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
+  }
+  filterBtns.forEach((b) => b.addEventListener('click', () => activate(b.dataset.side)));
+
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
+  function store(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); return true; } catch { return false; } }
+
+  function bump(side, delta) {
+    const el = document.querySelector(`[data-count="${side}"]`);
+    if (el) el.textContent = String(Number(el.textContent) + delta);
+  }
+
+  function render(c) {
+    const li = document.createElement('li');
+    li.className = 'dz-c dz-c--mine';
+    li.dataset.id = c.id;
+    const body = document.createElement('p');
+    body.className = 'dz-c__body';
+    body.textContent = c.text;
+    const meta = document.createElement('p');
+    meta.className = 'dz-c__meta label';
+    meta.innerHTML = '<span class="dz-mine-tag">You · only visible to you</span> · ';
+    const rm = document.createElement('button');
+    rm.type = 'button';
+    rm.className = 'dz-rm';
+    rm.textContent = 'Remove';
+    rm.addEventListener('click', () => {
+      store(load().filter((x) => x.id !== c.id));
+      li.remove();
+      bump(c.side, -1);
+      text.focus();
+    });
+    meta.append(rm);
+    li.append(body, meta);
+    const list = document.querySelector(`[data-list="${c.side}"]`);
+    list.prepend(li);
+    const empty = list.parentElement.querySelector('.dz-empty');
+    if (empty) empty.remove();
+  }
+
+  load().forEach((c) => { render(c); bump(c.side, 1); });
+
+  text.addEventListener('input', () => { len.textContent = `${text.value.length} / 800`; });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const value = text.value.trim();
+    const side = new FormData(form).get('side');
+    err.textContent = '';
+    text.removeAttribute('aria-invalid');
+    if (value.length < 20) {
+      err.textContent = 'Say a little more: at least 20 characters.';
+      text.setAttribute('aria-invalid', 'true');
+      text.focus();
+      return;
+    }
+    const c = { id: String(Date.now()), side, text: value };
+    const saved = store([c, ...load()]);
+    render(c);
+    bump(side, 1);
+    activate(side);
+    if (!saved) err.textContent = 'Your browser blocked storage, so this comment will disappear when you leave the page.';
+    form.reset();
+    form.querySelector(`input[value="${side}"]`).checked = true;
+    len.textContent = '0 / 800';
+    document.querySelector(`.dz-col[data-side="${side}"]`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
+
+<style is:global>
+  .dz-head { padding-block: clamp(3rem, 8vw, 5rem) clamp(2rem, 5vw, 3rem); }
+  .dz-head .label a { color: inherit; text-decoration: none; }
+  .dz-head .label a:hover { color: var(--blue); }
+  .dz-flag { color: var(--orange-text); font-weight: 600; }
+  .dz-title { font-size: clamp(2.4rem, 1.6rem + 3.8vw, 4.5rem); font-weight: 400; letter-spacing: -0.025em; margin-top: .75rem; max-width: 18ch; }
+  .dz-intro { max-width: 38rem; margin-top: 1.25rem; color: var(--ink-2); font-size: 1.12em; line-height: 1.5; }
+  .dz-related { margin: 0; line-height: 1.5; }
+
+  .dz-filter { display: flex; gap: .4rem; margin-bottom: 1.5rem; position: sticky; top: 0; z-index: 5; background: var(--paper); padding-block: .6rem; }
+  .dz-filter__btn {
+    flex: 1; font-family: var(--sans); font-size: .85rem; font-weight: 600; min-height: 44px;
+    border: 1px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: .35rem; padding: .4rem .5rem;
+  }
+  .dz-filter__btn[aria-pressed='true'] { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); }
+  .dz-count { font-weight: 500; color: var(--ink-2); font-size: .78rem; }
+
+  .dz-board { display: grid; gap: 2rem; }
+  .dz-board[data-active='freewill'] .dz-col:not([data-side='freewill']),
+  .dz-board[data-active='compat'] .dz-col:not([data-side='compat']),
+  .dz-board[data-active='determinism'] .dz-col:not([data-side='determinism']) { display: none; }
+
+  @media (min-width: 60rem) {
+    .dz-filter { display: none; }
+    .dz-board { grid-template-columns: 1fr 1.1fr 1fr; gap: 0; align-items: start; }
+    .dz-board .dz-col { display: block !important; padding: 0 1.75rem; }
+    .dz-board .dz-col:first-child { padding-left: 0; }
+    .dz-board .dz-col:last-child { padding-right: 0; }
+    .dz-col--compat { border-inline: 1px solid var(--rule); }
+  }
+
+  .dz-col__head { border-top: 3px solid var(--ink); padding-top: 1rem; margin-bottom: 1.25rem; }
+  .dz-col--freewill .dz-col__head { border-top-color: var(--blue); }
+  .dz-col--compat .dz-col__head { border-top-color: var(--orange); }
+  .dz-col--determinism .dz-col__head { border-top-color: var(--ink-2); }
+  .dz-col__title { font-size: 1.7rem; font-weight: 450; }
+  .dz-col__claim { margin: .35rem 0 0; font-style: italic; color: var(--ink-2); font-size: 1rem; line-height: 1.4; }
+
+
+  .dz-thinkers { margin: 0 0 1.5rem; border-bottom: 1px solid var(--rule); padding-bottom: 1rem; }
+  .dz-thinkers summary { cursor: pointer; font-weight: 600; color: var(--ink); list-style: none; display: flex; align-items: center; gap: .4rem; min-height: 32px; }
+  .dz-thinkers summary::-webkit-details-marker { display: none; }
+  .dz-thinkers summary::after { content: '+'; font-size: 1rem; color: var(--ink-2); margin-left: auto; }
+  .dz-thinkers[open] summary::after { content: '–'; }
+  .dz-thinkers ul { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .9rem; }
+  .dz-thinkers li { display: grid; gap: .1rem; padding-left: .8rem; border-left: 2px solid var(--rule); }
+  .dz-col--freewill .dz-thinkers li { border-left-color: var(--blue); }
+  .dz-col--compat .dz-thinkers li { border-left-color: var(--orange); }
+  .dz-t__name { font-size: 1.08rem; font-weight: 500; line-height: 1.3; }
+  .dz-t__work { font-family: var(--sans); font-size: .76rem; color: var(--ink-2); }
+  .dz-t__idea { font-style: italic; font-size: .95rem; line-height: 1.4; color: var(--ink-2); margin-top: .15rem; }
+  .dz-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .dz-c { background: var(--paper-2); padding: 1.1rem 1.15rem; border-radius: var(--radius); }
+  .dz-c p { margin: 0; }
+  .dz-c__body { font-size: 1.02rem; line-height: 1.55; }
+  .dz-c__meta { margin-top: .7rem !important; }
+  .dz-c__tag { color: var(--ink-2); }
+  .dz-c--mine { background: var(--blue-soft); outline: 1px solid var(--blue); }
+  .dz-mine-tag { color: var(--blue); font-weight: 600; }
+  .dz-rm { font: inherit; color: var(--ink-2); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: .15em; }
+  .dz-rm:hover { color: var(--danger); }
+  .dz-c--returned { background: transparent; border: 1px dashed var(--rule); }
+  .dz-returned-tag { color: var(--orange-text); font-weight: 600; }
+  .dz-c--returned .dz-c__meta { margin-top: 0 !important; }
+  .dz-c__note { margin-top: .4rem !important; font-size: .95rem; font-style: italic; color: var(--ink-2); }
+  .dz-empty { margin: 0; }
+
+  .dz-compose { margin-top: clamp(3rem, 8vw, 4.5rem); max-width: 44rem; border-top: 2px solid var(--ink); padding-top: 1.25rem; }
+  .dz-compose__title { font-size: 1.8rem; font-weight: 450; }
+  .dz-compose__note { margin: .5rem 0 1.25rem; line-height: 1.5; }
+  #dz-form { display: grid; gap: .9rem; }
+  .dz-sides { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+  .dz-sides legend { font-family: var(--sans); font-weight: 600; font-size: .95rem; margin-bottom: .5rem; padding: 0; }
+  .dz-side {
+    display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; min-height: 44px;
+    padding: .5rem .85rem; border: 1px solid var(--rule); border-radius: var(--radius); font-family: var(--sans); font-weight: 500; font-size: .95rem;
+  }
+  .dz-side:has(input:checked) { border-color: var(--blue); background: var(--blue-soft); }
+  .dz-side:has(input:focus-visible) { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .dz-side input { accent-color: var(--blue); margin: 0; }
+  #dz-text {
+    font: inherit; font-family: var(--sans); font-size: 1rem; width: 100%; resize: vertical; line-height: 1.5;
+    padding: .8rem; border: 1px solid var(--ink-2); border-radius: var(--radius); background: var(--paper); color: var(--ink);
+  }
+  #dz-text:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  #dz-text[aria-invalid='true'] { border-color: var(--danger); }
+  .dz-form__foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .dz-form__foot p { margin: 0; }
+  .dz-err { margin: 0; font-family: var(--sans); font-size: .85rem; font-weight: 500; color: var(--danger); }
+  .dz-err:empty { display: none; }
+</style>
