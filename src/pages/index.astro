@@ -12,25 +12,16 @@ const sections = SECTIONS.map((sec) => ({ ...sec, count: pieces.filter((p) => p.
 ---
 <Base>
   <section class="intro wrap" aria-labelledby="mission">
-    <div class="intro__main">
-    <p class="label intro__issue">
-      <span class="numeral">Issue {currentIssue.numeral}</span> · “{currentIssue.theme}”
-    </p>
     <h1 id="mission" class="intro__mission">
       Philosophy and literature from the students who write it.
     </h1>
     <p class="intro__sub">
       A student journal born in the philosophy classrooms of Miami Dade College.
     </p>
-    </div>
-    <div class="pair" aria-hidden="true">
-      <p class="pair__word"><span lang="grc">μῦθος</span><span class="pair__gloss">the story</span></p>
-      <p class="pair__amp">&amp;</p>
-      <p class="pair__word"><span lang="grc">λόγος</span><span class="pair__gloss">the reason</span></p>
-    </div>
+    <a class="intro__cue label" href="#issue">Read Issue {currentIssue.numeral} <span aria-hidden="true">↓</span></a>
   </section>
 
-  <section class="front wrap" aria-label="In this issue">
+  <section class="front wrap" id="issue" aria-label="In this issue">
     {lead ? (
       <article class="lead">
         <a class="lead__link" href={href(`read/${lead.id}`, path)}>
@@ -87,20 +78,20 @@ const sections = SECTIONS.map((sec) => ({ ...sec, count: pieces.filter((p) => p.
 </Base>
 
 <style>
-  .intro { padding-block: clamp(3rem, 9vw, 6.5rem) clamp(2.5rem, 6vw, 4rem); display: grid; gap: 3rem; }
-  .pair { display: none; }
-  @media (min-width: 60rem) {
-    .intro { grid-template-columns: 1fr auto; align-items: end; }
-    .pair { display: grid; justify-items: end; gap: .25rem; padding-bottom: .5rem; }
-    .pair p { margin: 0; }
-    .pair__word { display: grid; justify-items: end; font-style: italic; font-size: 3.4rem; line-height: 1; color: var(--blue); }
-    .pair__gloss { font-family: var(--sans); font-style: normal; font-size: .8rem; color: var(--ink-2); margin-top: .35rem; }
-    .pair__amp { font-style: italic; font-size: 2rem; color: var(--orange); line-height: 1; margin: .6rem 0 !important; }
+  .intro {
+    min-height: calc(100svh - 6.5rem);
+    display: flex; flex-direction: column; justify-content: center;
+    padding-block: clamp(3rem, 8vw, 5rem);
   }
-  .intro__issue { margin-bottom: 1.4rem; }
-  .intro__issue .numeral { font-size: 1rem; }
+  .intro__cue {
+    margin-top: clamp(2.5rem, 6vw, 4rem); align-self: flex-start;
+    color: var(--blue); font-weight: 600; text-decoration: none;
+    border-bottom: 2px solid var(--orange); padding-bottom: .2rem;
+  }
+  .intro__cue:hover { color: var(--ink); }
+  .front { scroll-margin-top: 1.5rem; }
   .intro__mission {
-    font-size: clamp(2.5rem, 1.6rem + 4.4vw, 5.25rem);
+    font-size: clamp(2.75rem, 1.6rem + 5.2vw, 6.25rem);
     font-weight: 400; line-height: 1.02; letter-spacing: -0.025em;
     max-width: 15ch;
   }
