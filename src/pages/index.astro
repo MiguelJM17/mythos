@@ -72,7 +72,7 @@ const sections = SECTIONS.map((sec) => ({ ...sec, count: pieces.filter((p) => p.
           We read philosophic papers for Philosophy, and short essays, poems and other literary work for Literature. Every submission is read without the author’s name.
         </p>
       </div>
-      <a class="btn btn--light" href={href('submit', path)}>Send your work</a>
+      <a class="btn" href={href('submit', path)}>Send your work</a>
     </div>
   </section>
 </Base>
@@ -130,12 +130,10 @@ const sections = SECTIONS.map((sec) => ({ ...sec, count: pieces.filter((p) => p.
     .lead { padding-right: 2rem; }
   }
 
-  .call { background: var(--blue); color: var(--blue-ink); }
+  .call { border-top: 2px solid var(--ink); }
   .call__inner { padding-block: clamp(3rem, 8vw, 5rem); display: grid; gap: 2rem; align-items: end; }
   .call__title { font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem); font-weight: 400; line-height: 1.05; max-width: 18ch; }
-  .call__title em { color: inherit; }
-  .call__text { margin: 1rem 0 0; max-width: 32rem; opacity: .9; }
+  .call__title em { color: var(--blue); }
+  .call__text { margin: 1rem 0 0; max-width: 32rem; color: var(--ink-2); }
   @media (min-width: 48rem) { .call__inner { grid-template-columns: 1fr auto; } }
-  :global([data-theme='dark']) .call { background: #133b7e; color: var(--ink); }
-  :global([data-theme='dark']) .call .btn--light { background: var(--ink); color: #0e1a30; border-color: var(--ink); }
 </style>
