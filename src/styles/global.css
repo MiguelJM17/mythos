@@ -1,45 +1,48 @@
-@import '@fontsource-variable/newsreader/opsz.css';
-@import '@fontsource-variable/newsreader/opsz-italic.css';
-@import '@fontsource-variable/instrument-sans/index.css';
+@import '@fontsource-variable/playfair-display/wght.css';
+@import '@fontsource-variable/playfair-display/wght-italic.css';
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/source-serif-4/opsz-italic.css';
+@import '@fontsource-variable/public-sans/wght.css';
 
 /* ───────────────── Tokens ───────────────── */
 :root {
-  --paper: #fbfaf7;
-  --paper-2: #f2f0ea;
-  --ink: #14161a;
-  --ink-2: #55585f;
-  --rule: #dcd8cf;
+  --paper: #ffffff;
+  --paper-2: #f4f6f9;
+  --ink: #0f1419;
+  --ink-2: #545c68;
+  --rule: #dfe3e8;
   --blue: #0b3d91;
   --blue-ink: #ffffff;
-  --blue-soft: #e7edf7;
-  --orange: #e0702a;
-  --orange-text: #ad4f16; /* AA on paper for small text */
-  --danger: #a3261b;
+  --blue-soft: #e8eef8;
+  --orange: #e87722;
+  --orange-text: #b4520f; /* AA on white for small text */
+  --danger: #b42318;
   --ok: #1d6b45;
 
-  --serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
-  --sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --display: 'Playfair Display Variable', 'Didot', Georgia, serif;
+  --serif: 'Source Serif 4 Variable', Georgia, serif;
+  --sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
 
   --measure: 34rem;       /* ~66 characters at body size */
   --wide: 72rem;
   --gutter: clamp(1.25rem, 5vw, 3rem);
-  --radius: 3px;
+  --radius: 2px;
 
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --paper: #15171b;
-  --paper-2: #1e2126;
-  --ink: #ece8e1;
-  --ink-2: #a3a39e;
-  --rule: #2e3238;
-  --blue: #8db3f2;
-  --blue-ink: #0e1a30;
-  --blue-soft: #1c2738;
-  --orange: #f0975a;
-  --orange-text: #f0975a;
-  --danger: #f08a7e;
+  --paper: #10141a;
+  --paper-2: #18202a;
+  --ink: #e9edf2;
+  --ink-2: #9aa4b1;
+  --rule: #2a3340;
+  --blue: #8fb4f5;
+  --blue-ink: #0b1a33;
+  --blue-soft: #18263d;
+  --orange: #f4a261;
+  --orange-text: #f4a261;
+  --danger: #f2948a;
   --ok: #7fd1a4;
   color-scheme: dark;
 }
@@ -65,7 +68,7 @@ body {
 }
 main { flex: 1; }
 img { max-width: 100%; height: auto; }
-h1, h2, h3 { font-weight: 450; line-height: 1.1; letter-spacing: -0.012em; margin: 0; text-wrap: balance; }
+h1, h2, h3 { font-family: var(--display); font-weight: 500; line-height: 1.08; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 p { margin: 0 0 1.1em; text-wrap: pretty; }
 
 a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
@@ -105,7 +108,7 @@ a:hover { text-decoration-thickness: 2px; }
 .label--accent { color: var(--blue); }
 
 .numeral {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-style: italic;
   color: var(--orange-text);
 }
@@ -133,7 +136,7 @@ a:hover { text-decoration-thickness: 2px; }
 /* Prose (reading body) */
 .prose { max-width: var(--measure); }
 .prose h2 {
-  font-size: 1.35em; font-weight: 500; margin: 2.2em 0 .7em;
+  font-size: 1.4em; font-weight: 600; margin: 2.2em 0 .7em;
 }
 .prose ol, .prose ul { padding-left: 1.3em; margin: 0 0 1.2em; }
 .prose li { margin-bottom: .4em; padding-left: .2em; }
@@ -154,3 +157,10 @@ a:hover { text-decoration-thickness: 2px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* Display face for titles that aren't headings */
+.wordmark__name, .item__title, .sec__name, .ex__q, .discuss__q, .next__title,
+.principle__quote, .dz-t__name, .about__greek, .nf__code, .step__title, .code-display {
+  font-family: var(--display);
+}
+.prose > p:first-of-type::first-letter { font-family: var(--display); }
